@@ -1,0 +1,5 @@
+#include "virtual_broadcast/broadcaster/si.hpp"
+#include "virtual_broadcast/common/runtime_config.hpp"
+#include <fstream>
+#include <iostream>
+int main(int argc,char**argv){if(argc<3){std::cerr<<"usage: vb_generate_sample_ts config output.ts\n";return 2;}try{const auto c=vb::LoadRuntimeConfig(argv[1]);const auto&si=c.channels.front().si;vb::PsiSiGenerator gen(si);vb::InputProgram in;in.video=vb::ElementaryStream{2,0x200};in.audio=vb::ElementaryStream{15,0x201};std::ofstream f(argv[2],std::ios::binary|std::ios::trunc);const auto base=std::chrono::steady_clock::now();for(int i=0;i<80;++i){for(const auto&p:gen.GenerateDue(in,0x100,0x101,0x110,base+std::chrono::milliseconds(i*100)))f.write(reinterpret_cast<const char*>(p.data()),p.size());for(auto pid:{0x101,0x110}){vb::TsPacket p{};p.fill(0xff);p[0]=0x47;p[1]=static_cast<std::uint8_t>((pid>>8)&31);p[2]=static_cast<std::uint8_t>(pid);p[3]=0x10|(i&15);f.write(reinterpret_cast<const char*>(p.data()),p.size());}}std::cout<<"Generated diagnostic TS without copyrighted media\n";}catch(const std::exception&e){std::cerr<<e.what()<<"\n";return 1;}}

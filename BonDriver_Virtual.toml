@@ -1,0 +1,10 @@
+[connection]
+control_pipe = "VirtualBroadcastControl"
+ts_pipe = "VirtualBroadcastTS"
+
+[buffer]
+size_mb = 16
+
+[tuner]
+name = "Virtual Broadcast Tuner"
+signal_level = 30.0

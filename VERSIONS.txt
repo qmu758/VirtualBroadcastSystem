@@ -1,0 +1,7 @@
+VirtualBroadcastSystem version: 0.1.0
+Milestone: 8
+Build date: 2026-09-01
+Compiler: MSVC 19.50 / Visual Studio 2026 toolset, C++20
+Architectures: x86, x64
+Git commit: unavailable (workspace has no Git metadata)
+ARIB references: STD-B10 5.14; STD-B21 public 4.6-E1; STD-B24 6.4-E1; TR-B14 6.13 overview / 6.7-E1 public English material

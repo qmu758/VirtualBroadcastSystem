@@ -1,0 +1,93 @@
+[output]
+file_enabled = true
+pipe_enabled = true
+max_file_size_mb = 50
+
+[pipe]
+name = "VirtualBroadcastTS"
+control_name = "VirtualBroadcastControl"
+
+[ids.collision_check]
+existing_ids_file = "existing-ids-example.json"
+
+[[channels]]
+name = "Virtual TV 1"
+service_name = "松山自主放送"
+provider_name = "Virtual Broadcasting"
+network_name = "松山仮想放送ネットワーク"
+ts_name = "松山自主放送"
+udp_port = 12340
+debug_path = "../output/channel-0.ts"
+auto_ids = false
+original_network_id = 32760
+network_id = 32760
+transport_stream_id = 32513
+service_id = 101
+download_data_id = 32769
+logo_id = 1
+remote_control_key_id = 8
+physical_channel = 20
+center_frequency_hz = 515142857
+country = "JPN"
+prefecture = "愛媛県"
+area = "松山"
+timezone = "Asia/Tokyo"
+epg_interval_minutes = 60
+logo_enabled = true
+logo_source = "sample-logo-a.png"
+
+[channels.data_broadcast]
+enabled = true
+root = "sample-data/channel0"
+entry = "index.bml"
+pid = 0x0200
+download_id = 0xF0000001
+
+[channels.data_broadcast.carousel]
+block_size = 4066
+dii_interval_ms = 1000
+carousel_cycle_ms = 5000
+max_bitrate_kbps = 256
+
+[[channels]]
+name = "Virtual TV 2"
+service_name = "松山自主放送2"
+ts_name = "松山自主放送2"
+udp_port = 12341
+debug_path = "../output/channel-1.ts"
+auto_ids = true
+remote_control_key_id = 9
+physical_channel = 21
+center_frequency_hz = 521142857
+prefecture = "愛媛県"
+area = "松山"
+epg_interval_minutes = 120
+logo_enabled = true
+logo_source = "sample-logo-b.png"
+
+[channels.data_broadcast]
+enabled = true
+root = "sample-data/channel1"
+entry = "index.bml"
+pid = 0x0201
+download_id = 0xF0000002
+
+[[channels]]
+name = "Test Broadcast"
+service_name = "テスト放送"
+ts_name = "テスト放送"
+udp_port = 12342
+debug_path = "../output/channel-2.ts"
+auto_ids = true
+remote_control_key_id = 10
+physical_channel = 22
+center_frequency_hz = 527142857
+prefecture = "愛媛県"
+area = "松山"
+epg_interval_minutes = 1440
+logo_enabled = true
+logo_source = "sample-logo-c.png"
+
+[channels.data_broadcast]
+enabled = false
+

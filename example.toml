@@ -1,0 +1,90 @@
+[service]
+name = "松山自主放送"
+provider = "Virtual Broadcasting"
+service_id = 101
+service_type = 1
+remote_control_key_id = 8
+[network]
+original_network_id = 32760
+network_id = 32760
+transport_stream_id = 32513
+auto_id = false
+name = "松山仮想放送ネットワーク"
+[region]
+prefecture = "愛媛県"
+area = "松山"
+timezone = "Asia/Tokyo"
+[channel]
+physical_channel = 20
+center_frequency_mhz = 515.142857
+[input]
+uri = "udp://127.0.0.1:12340"
+[output]
+file_enabled = true
+pipe_enabled = true
+file_path = "output/debug.ts"
+max_file_size_mb = 50
+
+[pipe]
+enabled = true
+name = "VirtualBroadcastTS"
+control_name = "VirtualBroadcastControl"
+[epg]
+mode = "FixedInterval"
+interval_minutes = 60
+enabled = true
+fixed_anchor = "00:00"
+schedule_days = 7
+
+[epg.fixed]
+title_template = "自主放送 {HH}時台"
+description_template = "松山自主放送の{HH}時台です"
+[clock]
+source = "System"
+timezone = "Asia/Tokyo"
+country_code = "JPN"
+local_offset_minutes = 540
+
+[clock.local_time_offset_descriptor]
+enabled = true
+
+[sdt]
+enabled = true
+interval_ms = 1000
+
+[si]
+pat_interval_ms = 100
+pmt_interval_ms = 100
+nit_interval_ms = 1000
+sdt_interval_ms = 1000
+tot_interval_ms = 5000
+eit_pf_interval_ms = 500
+eit_schedule_interval_ms = 2000
+cdt_interval_ms = 30000
+[logo]
+enabled = true
+source = "sample-logo.png"
+logo_id = 1
+logo_version = 0
+download_data_id = 32769
+logo_type = 5
+cdt_version = 0
+auto_resize = true
+resize_mode = "contain"
+[data_broadcast]
+enabled = true
+root = "sample-data/channel0"
+entry = "index.bml"
+pid = 0x0200
+download_id = 0xF0000001
+data_event_id = 15
+
+[data_broadcast.carousel]
+block_size = 4066
+dii_interval_ms = 1000
+carousel_cycle_ms = 5000
+max_bitrate_kbps = 256
+max_modules = 256
+max_total_bytes = 16777216
+max_module_bytes = 1048576
+

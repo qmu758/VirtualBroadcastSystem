@@ -1,0 +1,13 @@
+#include "virtual_broadcast/common/pipe_protocol.hpp"
+#include <algorithm>
+#include <cstring>
+#include <stdexcept>
+namespace vb::pipe {
+namespace { void Put16(std::uint8_t* p,std::uint16_t v){p[0]=v&255;p[1]=v>>8;} void Put32(std::uint8_t* p,std::uint32_t v){for(int i=0;i<4;++i)p[i]=(v>>(i*8))&255;} }
+std::array<std::uint8_t,16> EncodeHeader(const Header& h){std::array<std::uint8_t,16>b{};Put32(b.data(),kMagic);Put16(b.data()+4,h.version);Put16(b.data()+6,static_cast<std::uint16_t>(h.type));Put32(b.data()+8,h.payload_size);Put32(b.data()+12,h.request_id);return b;}
+std::uint32_t DecodeU32(std::span<const std::uint8_t>b){return b.size()<4?0:static_cast<std::uint32_t>(b[0]|(b[1]<<8)|(b[2]<<16)|(b[3]<<24));}
+bool DecodeHeader(std::span<const std::uint8_t>b,Header&h){if(b.size()<16||DecodeU32(b)!=kMagic)return false;h.version=b[4]|(b[5]<<8);h.type=static_cast<Message>(b[6]|(b[7]<<8));h.payload_size=DecodeU32(b.subspan(8));h.request_id=DecodeU32(b.subspan(12));return h.payload_size<=kMaxPayload;}
+std::array<std::uint8_t,4> EncodeU32(std::uint32_t v){std::array<std::uint8_t,4>b{};Put32(b.data(),v);return b;}
+std::vector<std::uint8_t>EncodeChannels(std::span<const ChannelInfo>cs){std::vector<std::uint8_t>b(4);Put32(b.data(),static_cast<std::uint32_t>(cs.size()));for(const auto&c:cs){if(c.name.size()>255)throw std::length_error("channel name too long");const auto p=b.size();b.resize(p+28+c.name.size());Put32(b.data()+p,c.space);Put32(b.data()+p+4,c.channel);Put16(b.data()+p+8,c.service_id);Put16(b.data()+p+10,c.transport_stream_id);b[p+12]=c.remote_control_key_id;b[p+13]=c.physical_channel;for(int i=0;i<8;++i)b[p+14+i]=(c.center_frequency_hz>>(i*8))&255;std::uint32_t f;static_assert(sizeof(f)==sizeof(c.signal_level));std::memcpy(&f,&c.signal_level,4);Put32(b.data()+p+22,f);Put16(b.data()+p+26,static_cast<std::uint16_t>(c.name.size()));std::copy(c.name.begin(),c.name.end(),b.begin()+p+28);}return b;}
+bool DecodeChannels(std::span<const std::uint8_t>b,std::vector<ChannelInfo>&out){if(b.size()<4)return false;const auto n=DecodeU32(b);std::size_t p=4;out.clear();for(std::uint32_t i=0;i<n;++i){if(p+28>b.size())return false;ChannelInfo c;c.space=DecodeU32(b.subspan(p));c.channel=DecodeU32(b.subspan(p+4));c.service_id=b[p+8]|(b[p+9]<<8);c.transport_stream_id=b[p+10]|(b[p+11]<<8);c.remote_control_key_id=b[p+12];c.physical_channel=b[p+13];for(int j=0;j<8;++j)c.center_frequency_hz|=std::uint64_t(b[p+14+j])<<(j*8);const auto f=DecodeU32(b.subspan(p+22));std::memcpy(&c.signal_level,&f,4);const auto len=b[p+26]|(b[p+27]<<8);p+=28;if(p+len>b.size())return false;c.name.assign(reinterpret_cast<const char*>(b.data()+p),len);p+=len;out.push_back(std::move(c));}return p==b.size();}
+}
