@@ -1,0 +1,32 @@
+# Build outputs
+/build/
+/build-*/
+/out/
+/outputs/
+/output/
+
+# Visual Studio
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+
+# Compiled binaries
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.obj
+*.ilk
+
+# Runtime logs and generated streams
+*.log
+*.ts
+diagnostics/
+extracted/
+
+!tests/assets/**
+!config/sample-logo*.png
+!sample-data/**
