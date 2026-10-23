@@ -34,6 +34,8 @@ max_file_size_mb = 50
 
 `name`がTVTestに表示される局名です。`file_enabled = false`にすると診断TSを保存せず、Named Pipeへの配信だけを行います。
 
+地域は`[region]`の`prefecture`と`area`で変更します。`[network] auto_id = true`にすると、局名からPC内仮想局用のONID/NID/TSID/SID候補を決定的に生成します。同じ局名なら再起動後も同じ値です。これは公式に予約された仮想用途IDではなく、実在局と衝突しないことを保証するものでもありません。`[ids.collision_check] existing_ids_file`へ既知のID一覧JSONを指定すると、候補との衝突時に起動を停止します。
+
 ### 2. VirtualBroadcasterを起動する
 
 PowerShellで配布フォルダへ移動し、次を実行します。
@@ -68,6 +70,25 @@ OBS Studioで以下を設定します。OBSのversionや表示言語によって
 AACが表示されない場合は、先にcontainerを`mpegts`へ変更し、**互換性がない可能性のあるcodecをすべて表示**を有効にします。それでも選べない場合は`mp2` / `MPEG-2 Audio Layer II`、192 kbps、48 kHz stereoを使用できます。
 
 音声がハウリングする場合は、OBSの音声ミキサーにある歯車から **オーディオの詳細プロパティ** を開き、音声sourceを **モニターオフ** にします。TVTestの再生音をOBSのデスクトップ音声で再取得すると音声が循環するため、TVTest確認中はデスクトップ音声を無効にするか、個別音声sourceだけを使用してください。
+
+#### 放送に使う音声だけを出力する
+
+OBSの初期設定ではPC全体の再生音を取り込む **デスクトップ音声** が有効なため、裏で再生した動画、通知音、TVTestの音声なども放送へ混ざります。次の構成に変更してください。
+
+1. OBSの **設定** → **音声** → **グローバル音声デバイス**を開きます。
+2. **デスクトップ音声**と**デスクトップ音声 2**を **無効** にします。
+3. マイクを放送へ出さない場合は、**マイク音声**と**マイク音声 2～4**も **無効** にします。
+4. OBSメイン画面の **ソース**欄で **+** → **アプリケーション音声キャプチャ（ベータ）**を追加します。この機能はOBS Studio 28以降のWindows 10 version 2004以降またはWindows 11で利用できます。
+5. 仮想自主放送へ出したいplayer、browser、gameなどのwindow/processだけを選択します。titleが変化するアプリは、window titleより実行ファイル名を優先して照合します。
+6. OBS 30.1以降では、**ウィンドウキャプチャ**または**ゲームキャプチャ**のpropertyにある **音声をキャプチャ（ベータ）**を使用する方法もあります。この場合、同じアプリの **アプリケーション音声キャプチャ**を重ねて追加しないでください。
+7. 音声ミキサーで、放送対象の個別sourceだけmeterが動き、**デスクトップ音声**が存在しない、または常にmuteであることを確認します。
+8. 各sourceの **オーディオの詳細プロパティ**で、UDP/MPEG-TS出力に使用するaudio track 1だけを選択します。
+
+OBS自身のMedia Source、VLC Video Source、Browser Sourceなど、シーンへ直接追加したsourceの音声はデスクトップ音声を無効にしても出力できます。個別アプリ音声キャプチャに対応しないアプリは、Windowsの音量ミキサーでそのアプリだけをvirtual audio cableへ割り当て、OBSではそのcableを **音声入力キャプチャ**として追加します。
+
+VirtualBroadcasterはOBSから受け取った圧縮済み音声ESをそのままPID変換してTVTestへ渡します。したがって、OBSが混合した後の音声から特定アプリだけをVirtualBroadcaster側で除去することはできません。
+
+OBS公式手順: https://obsproject.com/kb/application-audio-capture-guide
 
 ### 4. TVTestで再生する
 
@@ -193,7 +214,7 @@ The application is terrestrial receiver **A-profile**, BML 1.0, direct-module Da
 
 Roots are canonicalized and restricted below the configured directory. Absolute/parent paths, unsupported extensions, missing entry BML, invalid image signatures, malformed BML roots, and configured limits fail explicitly. Defaults are 256 modules, 1 MiB/module, 16 MiB total. Disabled channels have no PMT data ES and no DII/DDB.
 
-Use `[data_broadcast]` for the legacy channel or `[channels.data_broadcast]` immediately after `[[channels]]`. Inspect with `scripts/inspect-carousel.ps1 -Path output/channel-0.ts -Pid 0x0200`; add `-ExtractDirectory extracted` to reconstruct modules. The sample application displays “松山自主放送 データ放送” and links news/weather pages without WebSocket, `fetch`, or localStorage.
+Use `[data_broadcast]` for the legacy channel or `[channels.data_broadcast]` immediately after `[[channels]]`. Inspect with `scripts/inspect-carousel.ps1 -Path output/channel-0.ts -Pid 0x0200`; add `-ExtractDirectory extracted` to reconstruct modules. The default sample application displays “松山自主放送 データ放送” and links news/weather pages without WebSocket, `fetch`, or localStorage.
 
 TVTest alone is not assumed to render BML; a compatible viewer/plugin may be required. Diagnose PMT, DSM-CC PID, DII, DDB, reconstruction, then BML launch separately. Complete BML DTD/profile semantic validation, hot reload, EIT data-content linkage, event-section carousel, and Object Carousel are not implemented. TVTest/BML-viewer display is unverified here.
 
